@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.QicheOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.qiche_order_uuid_number as qicheOrderUuidNumber
+        ,a.qiche_id as qicheId
+        ,a.yonghu_id as yonghuId
+        ,a.zuche_time as zucheTime
+        ,a.yujihuanche_time as yujihuancheTime
+        ,a.shijihuanche_time as shijihuancheTime
+        ,a.shiyongtianshu as shiyongtianshu
+        ,a.huafei_money as huafeiMoney
+        ,a.qiche_order_types as qicheOrderTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.QicheOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,qiche.qiche_uuid_number as qicheUuidNumber
+        ,qiche.qiche_name as qicheName
+        ,qiche.qiche_photo as qichePhoto
+        ,qiche.qiche_types as qicheTypes
+        ,qiche.qiche_kucun_number as qicheKucunNumber
+        ,qiche.qiche_old_money as qicheOldMoney
+        ,qiche.qiche_new_money as qicheNewMoney
+        ,qiche.qiche_clicknum as qicheClicknum
+        ,qiche.qiche_content as qicheContent
+        ,qiche.shangxia_types as shangxiaTypes
+        ,qiche.qiche_delete as qicheDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.new_money as newMoney
+        ,yonghu.yonghu_email as yonghuEmail
+
+        FROM qiche_order  a
+        left JOIN qiche qiche ON a.qiche_id = qiche.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.qicheOrderUuidNumber != '' and params.qicheOrderUuidNumber != null and params.qicheOrderUuidNumber != 'null' ">
+                and a.qiche_order_uuid_number like CONCAT('%',#{params.qicheOrderUuidNumber},'%')
+            </if>
+            <if test="params.qicheId != null and params.qicheId != ''">
+                and (
+                    a.qiche_id = #{params.qicheId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test=" params.zucheTimeStart != '' and params.zucheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.zuche_time) >= UNIX_TIMESTAMP(#{params.zucheTimeStart}) ]]>
+            </if>
+            <if test=" params.zucheTimeEnd != '' and params.zucheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.zuche_time) <= UNIX_TIMESTAMP(#{params.zucheTimeEnd}) ]]>
+            </if>
+            <if test=" params.yujihuancheTimeStart != '' and params.yujihuancheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.yujihuanche_time) >= UNIX_TIMESTAMP(#{params.yujihuancheTimeStart}) ]]>
+            </if>
+            <if test=" params.yujihuancheTimeEnd != '' and params.yujihuancheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.yujihuanche_time) <= UNIX_TIMESTAMP(#{params.yujihuancheTimeEnd}) ]]>
+            </if>
+            <if test=" params.shijihuancheTimeStart != '' and params.shijihuancheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shijihuanche_time) >= UNIX_TIMESTAMP(#{params.shijihuancheTimeStart}) ]]>
+            </if>
+            <if test=" params.shijihuancheTimeEnd != '' and params.shijihuancheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shijihuanche_time) <= UNIX_TIMESTAMP(#{params.shijihuancheTimeEnd}) ]]>
+            </if>
+            <if test="params.shiyongtianshuStart != null and params.shiyongtianshuStart != ''">
+                <![CDATA[  and a.shiyongtianshu >= #{params.shiyongtianshuStart}   ]]>
+            </if>
+            <if test="params.shiyongtianshuEnd != null and params.shiyongtianshuEnd != ''">
+                <![CDATA[  and a.shiyongtianshu <= #{params.shiyongtianshuEnd}   ]]>
+            </if>
+             <if test="params.shiyongtianshu != null and params.shiyongtianshu != ''">
+                and a.shiyongtianshu = #{params.shiyongtianshu}
+             </if>
+            <if test="params.huafeiMoneyStart != null ">
+                <![CDATA[  and a.huafei_money >= #{params.huafeiMoneyStart}   ]]>
+            </if>
+            <if test="params.huafeiMoneyEnd != null ">
+                <![CDATA[  and a.huafei_money <= #{params.huafeiMoneyEnd}   ]]>
+            </if>
+            <if test="params.qicheOrderTypes != null and params.qicheOrderTypes != ''">
+                and a.qiche_order_types = #{params.qicheOrderTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断汽车租赁的id不为空 -->
+            <if test=" params.qicheIdNotNull != '' and params.qicheIdNotNull != null and params.qicheIdNotNull != 'null' ">
+                and a.qiche_id IS NOT NULL
+            </if>
+            <if test=" params.qicheUuidNumber != '' and params.qicheUuidNumber != null and params.qicheUuidNumber != 'null' ">
+                and qiche.qiche_uuid_number like CONCAT('%',#{params.qicheUuidNumber},'%')
+            </if>
+            <if test=" params.qicheName != '' and params.qicheName != null and params.qicheName != 'null' ">
+                and qiche.qiche_name like CONCAT('%',#{params.qicheName},'%')
+            </if>
+            <if test="params.qicheTypes != null  and params.qicheTypes != ''">
+                and qiche.qiche_types = #{params.qicheTypes}
+            </if>
+
+            <if test="params.qicheKucunNumberStart != null  and params.qicheKucunNumberStart != '' ">
+                <![CDATA[  and qiche.qiche_kucun_number >= #{params.qicheKucunNumberStart}   ]]>
+            </if>
+            <if test="params.qicheKucunNumberEnd != null  and params.qicheKucunNumberEnd != '' ">
+                <![CDATA[  and qiche.qiche_kucun_number <= #{params.qicheKucunNumberEnd}   ]]>
+            </if>
+            <if test="params.qicheKucunNumber != null  and params.qicheKucunNumber != '' ">
+                and qiche.qiche_kucun_number = #{params.qicheKucunNumber}
+            </if>
+            <if test="params.qicheOldMoneyStart != null ">
+                <![CDATA[  and qiche.qiche_old_money >= #{params.qicheOldMoneyStart}   ]]>
+            </if>
+            <if test="params.qicheOldMoneyEnd != null ">
+                <![CDATA[  and qiche.qiche_old_money <= #{params.qicheOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.qicheNewMoneyStart != null ">
+                <![CDATA[  and qiche.qiche_new_money >= #{params.qicheNewMoneyStart}   ]]>
+            </if>
+            <if test="params.qicheNewMoneyEnd != null ">
+                <![CDATA[  and qiche.qiche_new_money <= #{params.qicheNewMoneyEnd}   ]]>
+            </if>
+            <if test="params.qicheClicknumStart != null  and params.qicheClicknumStart != '' ">
+                <![CDATA[  and qiche.qiche_clicknum >= #{params.qicheClicknumStart}   ]]>
+            </if>
+            <if test="params.qicheClicknumEnd != null  and params.qicheClicknumEnd != '' ">
+                <![CDATA[  and qiche.qiche_clicknum <= #{params.qicheClicknumEnd}   ]]>
+            </if>
+            <if test="params.qicheClicknum != null  and params.qicheClicknum != '' ">
+                and qiche.qiche_clicknum = #{params.qicheClicknum}
+            </if>
+            <if test=" params.qicheContent != '' and params.qicheContent != null and params.qicheContent != 'null' ">
+                and qiche.qiche_content like CONCAT('%',#{params.qicheContent},'%')
+            </if>
+            <if test="params.shangxiaTypes != null  and params.shangxiaTypes != ''">
+                and qiche.shangxia_types = #{params.shangxiaTypes}
+            </if>
+
+            <if test="params.qicheDeleteStart != null  and params.qicheDeleteStart != '' ">
+                <![CDATA[  and qiche.qiche_delete >= #{params.qicheDeleteStart}   ]]>
+            </if>
+            <if test="params.qicheDeleteEnd != null  and params.qicheDeleteEnd != '' ">
+                <![CDATA[  and qiche.qiche_delete <= #{params.qicheDeleteEnd}   ]]>
+            </if>
+            <if test="params.qicheDelete != null  and params.qicheDelete != '' ">
+                and qiche.qiche_delete = #{params.qicheDelete}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
